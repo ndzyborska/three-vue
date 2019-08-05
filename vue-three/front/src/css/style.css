@@ -25,19 +25,6 @@ body {
    position: relative;
 }
 
-#location-input {
-   height: 42px;
-   width: 100%;
-   opacity: 1;
-   border: 0;
-   border-radius: 2px;
-   background-color: rgba(255, 255, 255, 0.2);
-   margin-top: 16px;
-   padding-left: 16px;
-   color: #ffffff;
-   font-size: 1.8rem;
-   line-height: 21px;
-}
 
 #location-input:focus {
    outline: none;
@@ -104,15 +91,7 @@ body {
    vertical-align: super;
 }
 
-#max-summary,
-#min-summary {
-   opacity: 0.9;
-   color: #ffffff;
-   font-size: 1.4rem;
-   line-height: 16px;
-   margin-top: 2px;
-   opacity: 0.7;
-}
+
 
 #search-btn {
    position: absolute;
@@ -131,14 +110,6 @@ body {
    height: 100vh;
 }
 
-#date-desc,
-#location-desc {
-   color: #ffffff;
-   font-size: 1.6rem;
-   font-weight: 500;
-   line-height: 19px;
-   margin-bottom: 15px;
-}
 
 #date-desc>img {
    top: -3px;
@@ -168,19 +139,6 @@ body {
    transform: translate(-50%, -50%);
 }
 
-.max-desc {
-   width: 80px;
-   float: left;
-   margin-right: 28px;
-}
-
-.temp-max-min {
-   margin-top: 40px
-}
-
-#dashboard-content {
-   background-color: #F7F7F7;
-}
 
 .custom-card {
    background-color: #FFFFFF !important;

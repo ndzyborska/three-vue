@@ -1,9 +1,9 @@
 <template>
-  <div style="position: relative">
+  <div class="container">
     <canvas id="threeCanvas"></canvas>
-    <b-container class="bv-example-row">
+    <b-container class="things">
       <b-row>
-        <b-col class="things" v-for="light in lights" v-bind:key="light.id" :id="light.id">
+        <b-col v-for="light in lights" v-bind:key="light.id" :id="light.id">
           <Light :light="light"></Light>
         </b-col>
       </b-row>
@@ -21,7 +21,10 @@ var renderer;
 var scene;
 var sceneOrtho;
 var cameraOrtho;
-var line, point1;
+var point1;
+var line;
+var lines = [];
+
 var raycaster = new THREE.Raycaster();
 var topRightPos = new THREE.Vector2();
 var mapC;
@@ -54,15 +57,6 @@ export default {
       var light = new THREE.AmbientLight(0xffffff, 0.5);
       scene.add(light);
 
-      line = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(),
-          new THREE.Vector3()
-        ]),
-        new THREE.LineBasicMaterial({ color: "black" })
-      );
-      scene.add(line);
-
       var mtlLoader = new MTLLoader();
       mtlLoader.load("/static/assets/basic.mtl", materials => {
         materials.preload();
@@ -93,71 +87,60 @@ export default {
       controls.campingFactor = 0.25;
       controls.enableZoom = true;
     },
-    connectStats: function() {
-      let headers = new Headers();
-
-      headers.append(
-        "Authorization",
-        "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzaXRlVGFnIjoiQkFSTkFSRFMiLCJpc3N1ZWRGb3IiOiJwcmVmZWN0IiwiaXNzIjoiaHR0cHM6Ly9wcmUyMDAwLmNvLnVrIiwiYXVkIjoiaHR0cHM6Ly9wcmUyMDAwLmNvLnVrIiwiZXhwIjoxNTY5ODM1MDc2LCJuYmYiOjE0MTIwNjg2NzZ9.Mk6A8i5q1xnENC-CneV9Gn3TWgp9JSwo9WtaTvoGq3Y"
-      );
-
-      fetch(
-        "https://cors-anywhere.herokuapp.com/https://pre2000.co.uk/apiv1/SiteApi/BARNARDS/NodeStatus",
-        {
-          method: "GET",
-          headers: headers
-        }
-      )
-        .then(response => response.json())
-        .then(json => updateFloors(json))
-        .catch(error => console.log("Authorization failed : " + error.message));
-    },
     setUpLines: function() {
-      var light = document.getElementById("1");
-      var rect = light.getBoundingClientRect();
-      var bodyRect = document.body.getBoundingClientRect();
-      var offset = rect.top - bodyRect.top;
-      var width = window.innerWidth / 2;
-      var height = window.innerHeight / 2;
-      var sWidth = light.style.width / 2;
-      var sHeight = light.style.height / 2;
-      console.log((width - sWidth) / width, (height - sHeight) / height);
+      this.lights.forEach((light, index) => {
+        line = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(),
+            new THREE.Vector3()
+          ]),
+          new THREE.LineBasicMaterial({ color: "black" })
+        );
+        scene.add(line);
+        var pos = new THREE.Vector2();
+        pos.set(-0.7 + (7 / 15) * index, 0.7);
 
-      console.log(
-        "Element is " + bodyRect.top + " vertical pixels from <body>"
-      );
-
-      var width = window.innerWidth / 2;
-      var height = window.innerHeight / 2;
-      point1 = new THREE.Vector3();
-      console.log(rect.top, rect.bottom, rect.right, rect.left);
-      topRightPos.set(0.8, 0.6);
-
-      var mesh = group.children[12];
-
-      // console.log(mesh);
-
-      mesh.geometry.computeBoundingBox();
-      var center = new THREE.Vector3();
-      mesh.geometry.boundingBox.getCenter(center);
-      mesh.geometry.center();
-      mesh.position.copy(center);
+        lines.push({ line: line, position: pos });
+        var mesh = this.getObject(light.id);
+        mesh.geometry.computeBoundingBox();
+        var center = new THREE.Vector3();
+        mesh.geometry.boundingBox.getCenter(center);
+        mesh.geometry.center();
+        mesh.position.copy(center);
+        var point2 = new THREE.Vector3();
+        point2 = mesh.position;
+        line.geometry.attributes.position.setXYZ(
+          1,
+          point2.x,
+          point2.y,
+          point2.z
+        );
+      });
     },
-
+    getObject: function(name) {
+      for (let child of group.children) {
+        if (child.name === name) {
+          return child;
+        }
+      }
+      return null;
+    },
     animate: function() {
-      var point2 = new THREE.Vector3();
       requestAnimationFrame(this.animate);
-      raycaster.setFromCamera(topRightPos, camera);
-      raycaster.ray.at(1, point1);
-      line.geometry.attributes.position.setXYZ(0, point1.x, point1.y, point1.z);
+      point1 = new THREE.Vector3();
 
-      point2 = group.children[12].position;
-
-      line.geometry.attributes.position.setXYZ(1, point2.x, point2.y, point2.z);
-
-      line.geometry.attributes.position.needsUpdate = true;
+      lines.forEach(line => {
+        raycaster.setFromCamera(line.position, camera);
+        raycaster.ray.at(4, point1);
+        line.line.geometry.attributes.position.setXYZ(
+          0,
+          point1.x,
+          point1.y,
+          point1.z
+        );
+        line.line.geometry.attributes.position.needsUpdate = true;
+      });
       renderer.setSize(this.$el.clientWidth, this.$el.clientHeight);
-
       renderer.clear();
       renderer.render(scene, camera);
       renderer.clearDepth();
@@ -170,9 +153,14 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  position: relative;
+  height: 100%;
+}
 .things {
-  width: 4%;
-  height: 4%;
+  position: absolute;
+  top: -1%;
+  height: 5%;
 }
 
 #threeCanvas {

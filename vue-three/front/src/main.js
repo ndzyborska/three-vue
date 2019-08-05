@@ -32,18 +32,17 @@ Vue.use(SvgTransition);
 
 Vue.use(BootstrapVue);
 
-Vue.config.productionTip = false;
 var backend = false;
-
-if (backend) {
-  Vue.use(new VueSocketIO({
-    debug: true,
-    connection: "http://localhost:3001",
-  }))
-}
-
-
 Vue.use(Vuetify);
+
+Vue.use(new VueSocketIO({
+  debug: true,
+  connection: "http://localhost:3001",
+}))
+
+Vue.config.productionTip = false;
+
+
 
 /* eslint-disable no-new */
 new Vue({

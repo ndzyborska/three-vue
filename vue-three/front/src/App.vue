@@ -2,11 +2,29 @@
   <div id="ancestor">
     <div class="container-fluid" id="app">
       <div class="row">
-        <div id="sidebar" class="col-md-3 col-sm-4 col-xs-12 sidebar"></div>
+        <div id="sidebar" class="col-md-3 col-sm-4 col-xs-12 sidebar">
+          <div></div>
+          <div id="bar">
+            <svg>
+              <rect
+                v-for="device in devices"
+                :key="device.no"
+                :y="20*device.no"
+                height="40"
+                style="fill:white;stroke-width:3;stroke:rgb(0,0,0)"
+              >
+                <rect
+                  :width="device.energy*5"
+                  style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)"
+                />
+              </rect>
+            </svg>
+          </div>
+        </div>
         <Model :lights="lights" class="col-md-9 col-sm-8 col-xs-12 content" id="dashboard-content"></Model>
       </div>
     </div>
-    <v-btn large fab color="green" v-on:click="changeGreen">
+    <!-- <v-btn large fab color="green" v-on:click="changeGreen">
       <v-icon color="white" v-if="greenState">brightness_1</v-icon>
       <v-icon color="white" v-if="!greenState">wb_incandescent</v-icon>
     </v-btn>
@@ -19,13 +37,14 @@
     <v-btn large fab color="red" v-on:click="changeRed">
       <v-icon color="white" v-if="redState">brightness_1</v-icon>
       <v-icon color="white" v-if="!redState">wb_incandescent</v-icon>
-    </v-btn>
+    </v-btn>-->
     <br />
   </div>
 </template>
 
 <script>
 import Model from "./components/Model.vue";
+import * as io from "socket.io-client";
 
 export default {
   name: "App",
@@ -33,87 +52,50 @@ export default {
     Model: Model
   },
   data() {
+    var devices = [
+      { no: 1, id: "l01", energy: 17 },
+      { no: 2, id: "l02", energy: 15 },
+      { no: 3, id: "l03", energy: 4 },
+      { no: 4, id: "l04", energy: 2 }
+    ];
+    var lights;
     return {
-      greenState: 1,
-      yellowState: 1,
-      redState: 1,
-      lights: [
-        {
-          name: "lights1",
-          id: 1,
-          data: [
-            { hour: "00.00", on: true, oc: true },
-            { hour: "09.00", on: false, oc: true },
-            { hour: "11.00", on: true, oc: false },
-            { hour: "11.00", on: true, oc: true }
-            // { hour: "13.00", on: true, oc: false },
-            // { hour: "16.00", on: false, oc: true },
-            // { hour: "18.00 PM", on: false, oc: false },
-            // { hour: "21.00 PM", on: false, oc: false }
-          ]
-        },
-        {
-          name: "lights2",
-          id: 2,
-          data: [
-            { hour: "00.00", on: false, oc: true },
-            { hour: "02.00", on: true, oc: true },
-            { hour: "05.00", on: false, oc: true },
-            { hour: "11.00", on: true, oc: true }
-            // { hour: "13.00", on: true, oc: false },
-            // { hour: "14.00", on: false, oc: true },
-            // { hour: "15.00", on: false, oc: false },
-            // { hour: "16.00", on: false, oc: false }
-          ]
-        },
-        {
-          name: "lights3",
-          id: 3,
-          data: [
-            { hour: "00.00 AM", on: false, oc: true },
-            { hour: "11.00 AM", on: true, oc: true }
-            // { hour: "13.00 PM", on: true, oc: false },
-            // { hour: "15.06 PM", on: false, oc: true },
-            // { hour: "17.22 PM", on: false, oc: false },
-            // { hour: "20.56 PM", on: false, oc: false }
-          ]
-        },
-        {
-          name: "lights4",
-          id: 4,
-          data: [
-            { hour: "00.00", on: false, oc: true },
-            { hour: "11.00", on: true, oc: true }
-            // { hour: "12.00 PM", on: true, oc: true },
-            // { hour: "12.20 PM", on: true, oc: false },
-            // { hour: "13.10 PM", on: false, oc: true },
-            // { hour: "15.00 PM", on: false, oc: false },
-            // { hour: "19.20 PM", on: false, oc: false }
-          ]
-        }
-      ],
-      temps: ["temp1", "temp2", "temp3"],
-      washing: ["wahser1"],
-      dish: ["dish1"],
-      kettle: ["kettle1"],
-      car: ["car1"]
+      socket: io("localhost:3001"),
+      devices,
+
+      // greenState: 1,
+      // yellowState: 1,
+      // redState: 1,
+      lights: [],
+      temps: ["t01", "t02", "t03"],
+      washing: ["w01"],
+      dish: ["d01"],
+      kettle: ["k01"],
+      car: ["c1"]
     };
   },
-  methods: {
-    changeGreen: function() {
-      this.$socket.emit("switchGreen", this.greenState);
-      this.greenState = !this.greenState;
-    },
-    changeYellow: function() {
-      this.$socket.emit("switchYellow", this.yellowState);
-      this.yellowState = !this.yellowState;
-    },
-    changeRed: function() {
-      this.$socket.emit("switchRed", this.redState);
-      this.redState = !this.redState;
-    }
+  // mounted: {
+  //   getData: function() {
+  //     this.$socket.on("myEvent", function(data) {
+  //       console.log(data.arrayToSendToBrowser);
+  //       // ["I'm the data that will get sent.", "I'm some more data.", "Here's the third piece of data.]"
+  //     });
+  //   }
+  // changeGreen: function() {},
+  // changeYellow: function() {
+  //   this.$socket.emit("switchYellow", this.yellowState);
+  //   this.yellowState = !this.yellowState;
+  // },
+  // changeRed: function() {
+  //   this.$socket.emit("switchRed", this.redState);
+  //   this.redState = !this.redState;
+  // }
+
+  mounted: function() {
+    this.socket.on("leds", stuff => {
+      this.lights = stuff;
+    });
   }
-  // mounted: function() {
   //   var five = require("johnny-five");
   //   var keypress = require("keypress");
 
@@ -159,7 +141,7 @@ export default {
 @import "./css/style.css";
 @import "./css/bootstrap.min.css";
 
-#green {
+/* #green {
   background-color: green;
   width: 10%;
   margin: 20;
@@ -173,13 +155,26 @@ export default {
   background-color: red;
   width: 10%;
   margin: 20;
-}
+} */
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  position: relative;
   color: #2c3e50;
+}
+#sidebar {
+  position: relative;
+}
+
+#bar {
+  position: absolute;
+  background-color: white;
+  top: 45%;
+  overflow: auto;
+  height: 52%;
+  width: 88%;
 }
 </style>
 
