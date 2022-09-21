@@ -28,7 +28,7 @@
     "vue-router": "^3.0.1",
     "vue-socket.io": "^3.0.7",
     "vue-svg-transition": "^0.2.1",
-    "vuetify": "^2.0.1"
+    "vuetify": "^2.6.10"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
